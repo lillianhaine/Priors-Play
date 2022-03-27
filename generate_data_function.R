@@ -53,16 +53,46 @@ generate_data <- function(NRCT, NRWD,
   
   beta <-  c(lambda, gamma, psi, rep(0, num_X)) ## 0 beta for the X values, lambda: ctrl; gamma: trt; psi: bias
   
-  all_dat$Y <- rbinom(N, 1, prob = inv.logit(X_dat%*%beta) )
+  # print( dim(X_dat) ); 
+  # print( length(beta) )
   
-  mean(filter(all_dat, Trt == "TRT_0")$Y)
-  mean(filter(all_dat, Trt == "TRT_0", S == 0)$Y)
-  mean(filter(all_dat, Trt == "TRT_0", S == 1)$Y)
-  mean(filter(all_dat, Trt == "TRT_1", S == 1)$Y)
+  all_dat$prob <- inv.logit( X_dat%*%beta )
   
-  return(all_dat)
+  all_dat$Y <- rbinom(N, 1, prob = all_dat$prob )
+  
+  ret.list <- list(all_dat = all_dat, 
+                   beta = beta, 
+                   X_dat = X_dat)
+        
+  
+  return(ret.list)
   
 }
 
+test <- generate_data(5*100, 5*1000, 5, 4, 
+                      lambda = log( 0.3/0.7) , 
+                      gamma = c(-1, 1, 0.50, 
+                                0.70), 
+                      psi = 0.8, drift = 0)
 
+## Check on things: 
+#################################################################
+#################################################################
+all_dat_check = test$all_dat
+print( paste0( "TRT == 0, both: ", mean(filter(all_dat_check, Trt == "TRT_0")$Y) ))
+print( paste0( "TRT == 0, S == 1: ", mean(filter(all_dat_check, Trt == "TRT_0", S == 1)$Y) ) )
+print( paste0( "TRT == 0, S == 0: ", mean(filter(all_dat_check, Trt == "TRT_0", S == 0)$Y) ) )
+print( paste0( "TRT == 1: ", mean(filter(all_dat_check, Trt == "TRT_1")$Y) ) )
+print( paste0( "TRT == 2: ", mean(filter(all_dat_check, Trt == "TRT_2")$Y) ) )
+print( paste0( "TRT == 3: ", mean(filter(all_dat_check, Trt == "TRT_3")$Y) ) )
+print( paste0( "TRT == 4: ", mean(filter(all_dat_check, Trt == "TRT_4")$Y) )  )
+print( paste0( "TRT == 0, prob: ", mean(filter(all_dat_check, Trt == "TRT_0")$prob) ))
+print( paste0( "TRT == 0, S == 1, prob: ", mean(filter(all_dat_check, Trt == "TRT_0", S == 1)$prob) ) )
+print( paste0( "TRT == 0, S == 0, prob: ", mean(filter(all_dat_check, Trt == "TRT_0", S == 0)$prob) ) )
+print( paste0( "TRT == 1, prob: ", mean(filter(all_dat_check, Trt == "TRT_1")$prob) ) )
+print( paste0( "TRT == 2, prob: ", mean(filter(all_dat_check, Trt == "TRT_2")$prob) ) )
+print( paste0( "TRT == 3, prob: ", mean(filter(all_dat_check, Trt == "TRT_3")$prob) ) )
+print( paste0( "TRT == 4, prob: ", mean(filter(all_dat_check, Trt == "TRT_4")$prob) )  )
 
+# print(head(X_dat) )
+print(test$beta)
